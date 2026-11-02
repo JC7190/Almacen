@@ -13,9 +13,13 @@
 <link rel="manifest" href="manifest.json">
 <title>Buscador del almacén</title>
 <meta name="description" content="Busca un producto por nombre o referencia y se ilumina su sitio en el plano del almacén.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700;800&display=swap">
+<style>
+/* Tipos de letra dentro de la app: no espera a internet para pintar */
+@font-face{font-family:"Inter Tight";src:url(fonts/inter-tight-latin-500-normal.woff2) format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Inter Tight";src:url(fonts/inter-tight-latin-600-normal.woff2) format("woff2");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Inter Tight";src:url(fonts/inter-tight-latin-700-normal.woff2) format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Inter Tight";src:url(fonts/inter-tight-latin-800-normal.woff2) format("woff2");font-weight:800;font-style:normal;font-display:swap}
+</style>
 <style>
 /* Layout: una columna — plano arriba, buscador debajo; al elegir un producto se ilumina su sitio */
 :root {
