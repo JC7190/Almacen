@@ -6,4 +6,5 @@ Buscador del almacén: escribe el nombre o la referencia de un producto y se ilu
 - **Añadir o mover productos:** edita la lista `PRODUCTOS` en `index.html`.
   - `n` nombre · `r` referencia · `a` referencia alternativa · `d` texto de ubicación · `k` palabras clave extra.
   - `t` lista de `id` del plano que se iluminan (estanterías `p1-A`, `B3-5`…, pinchos `pk-…`, pasillos `pas-1`…`pas-6`, zonas `zone-B3`). Déjala vacía (`[]`) si la ubicación está pendiente.
+- La versión que se ve en la esquina del plano está en `index.html` (`id="ver"`): súbela con cada cambio, junto al número de `CACHE` de `sw.js`.
 - Si cambias iconos o tipos de letra, sube el número de `CACHE` en `sw.js`. Los cambios en `index.html` llegan solos (se ven en la siguiente apertura).
