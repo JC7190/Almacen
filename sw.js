@@ -1,12 +1,13 @@
 // Copia local de la app para que abra sin conexión.
+// IMPORTANTE: sube el número de CACHE cada vez que cambies iconos o tipos de letra.
 // Se abre siempre con la copia guardada (rápido y sin cobertura);
 // la versión nueva se baja por detrás y se ve en la siguiente apertura.
-const CACHE = "almacen-v6";
+const CACHE = "almacen-v7";
 const APP = ["./", "index.html", "manifest.json", "apple-touch-icon.png", "icon-192.png", "icon-512.png",
   "inter-tight-latin-500-normal.woff2", "inter-tight-latin-600-normal.woff2", "inter-tight-latin-700-normal.woff2", "inter-tight-latin-800-normal.woff2"];
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(APP)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(APP.map(u => new Request(u, { cache: "reload" })))).then(() => self.skipWaiting()));
 });
 // Solo se borran copias viejas de ESTA app: las demás apps de jc7190.github.io comparten el mismo espacio
 self.addEventListener("activate", e => {
@@ -22,7 +23,7 @@ self.addEventListener("fetch", e => {
   // Por detrás se descarga la versión nueva, que se verá la próxima vez que se abra.
   if (req.mode === "navigate") {
     const net = fetch(req, { cache: "no-store" }).then(r => {
-      if (r.ok) { const copy = r.clone(); caches.open(CACHE).then(c => c.put("index.html", copy)); }
+      if (r.ok && !r.redirected) { const copy = r.clone(); caches.open(CACHE).then(c => c.put("index.html", copy)); }
       return r;
     });
     e.waitUntil(net.catch(() => {}));
