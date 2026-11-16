@@ -3,6 +3,7 @@
   "short_name": "Almacén",
   "description": "Busca un producto por nombre o referencia y se ilumina su sitio en el plano.",
   "lang": "es",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

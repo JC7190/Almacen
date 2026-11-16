@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1D4E89">
+<meta name="theme-color" content="#1D4E89" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131518" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Almacén">
@@ -11,6 +12,8 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
+<link rel="preload" href="inter-tight-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="inter-tight-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <title>Buscador del almacén</title>
 <meta name="description" content="Busca un producto por nombre o referencia y se ilumina su sitio en el plano del almacén.">
 <style>
@@ -78,7 +81,6 @@ h1 { font: 800 1.55rem/1.1 var(--font); margin: 0; letter-spacing: -.01em; }
 .halo { fill: transparent; transition: fill .25s; }
 .pas circle { fill: #2A2E33; transition: fill .25s; }
 .pas text { font: 700 .5px var(--font); fill: #FFFFFF; text-anchor: middle;  }
-.zlabel rect { fill: var(--bg); }
 .zlabel text { font: 700 .62px var(--font); fill: var(--ink); text-anchor: middle;  letter-spacing: .02px; }
 
 
@@ -105,6 +107,7 @@ h1 { font: 800 1.55rem/1.1 var(--font); margin: 0; letter-spacing: -.01em; }
 /* Al elegir: todo apagado menos la estancia del producto; su sitio en color vivo de la estancia */
 :root { --v-alm:#3F8EF0; --v-bun:#34B062; --v-rec:#F0B90B; --v-ban:#E5534B; --v-tal:#8A9096; }
 [data-z] { transition: opacity .25s, fill .25s; }
+#plan.has-hl .off { opacity: .28; }
 .rack.hl[data-t="alm"] { fill: var(--v-alm); } .rack.hl[data-t="bun"] { fill: var(--v-bun); }
 .rack.hl[data-t="rec"] { fill: var(--v-rec); } .rack.hl[data-t="ban"] { fill: var(--v-ban); }
 .rack.hl { animation: pulse 1.4s ease-in-out infinite; }
@@ -125,7 +128,7 @@ h1 { font: 800 1.55rem/1.1 var(--font); margin: 0; letter-spacing: -.01em; }
 .search input {
   width: 100%; background: var(--surface); border: 2px solid #3F8EF0; border-radius: 12px;
   box-shadow: 0 0 0 4px color-mix(in srgb, #3F8EF0 18%, transparent), 0 2px 10px color-mix(in srgb, #3F8EF0 22%, transparent);
-  padding: 13px 44px 13px 14px; font: 600 1.05rem var(--font);
+  padding: 13px 44px 13px 14px; font: 600 1.05rem var(--font); color: var(--ink);
 }
 .search input:focus { outline: none; border-color: #2F7BE0; box-shadow: 0 0 0 5px color-mix(in srgb, #3F8EF0 30%, transparent), 0 2px 14px color-mix(in srgb, #3F8EF0 30%, transparent); }
 .clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border: none; border-radius: 8px; background: none; color: var(--muted); font-size: 1.2rem; cursor: pointer; }
@@ -147,6 +150,7 @@ h1 { font: 800 1.55rem/1.1 var(--font); margin: 0; letter-spacing: -.01em; }
 .where .what { font: 800 1.05rem var(--font); }
 .where .loc { color: var(--hl-ink); font-weight: 600; font-size: .92rem; }
 :focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 </style>
 
 </head>
@@ -159,16 +163,17 @@ h1 { font: 800 1.55rem/1.1 var(--font); margin: 0; letter-spacing: -.01em; }
 
   <div class="card map"><svg id="plan" viewBox="-0.6 -0.6 31.2 31.2" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Plano del almacén"><polygon id="zone-ALMACÉN" class="zone t-alm" data-z="ALMACÉN" data-t="alm" points="7,0 20,0 20,24 0,24 0,7.1"/><polygon id="zone-RECEPCIÓN" class="zone t-rec" data-z="RECEPCIÓN" data-t="rec" points="20,0 30,0 30,8.4 20,8.4"/><polygon id="zone-TALLER" class="zone t-tal" data-z="TALLER" data-t="tal" points="20,8.4 30,8.4 30,24 20,24"/><polygon id="zone-B1" class="zone t-bun" data-z="B1" data-t="bun" points="21.7,24 30,24 30,30 21.7,30"/><polygon id="zone-B2" class="zone t-bun" data-z="B2" data-t="bun" points="15.2,24 21.7,24 21.7,30 15.2,30"/><polygon id="zone-B3" class="zone t-bun" data-z="B3" data-t="bun" points="5.1,24 15.2,24 15.2,30 5.1,30"/><polygon id="zone-BAÑO" class="zone t-ban" data-z="BAÑO" data-t="ban" points="0,24 5.1,24 5.1,30 0,30"/><line class="wall-in" x1="20" y1="0" x2="20" y2="24"/><line class="wall-in" x1="20" y1="8.4" x2="30" y2="8.4"/><line class="wall-in" x1="0" y1="24" x2="30" y2="24"/><line class="wall-in" x1="5.1" y1="24" x2="5.1" y2="30"/><line class="div" x1="15.2" y1="24" x2="15.2" y2="30"/><line class="div" x1="21.7" y1="24" x2="21.7" y2="30"/><rect id="izq-C" class="rack" data-z="ALMACÉN" data-t="alm" x="0.2" y="7.5" width="2.5" height="4.333"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="1.45" y="9.667">C</text><rect id="izq-B" class="rack" data-z="ALMACÉN" data-t="alm" x="0.2" y="11.833" width="2.5" height="4.333"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="1.45" y="14">B</text><rect id="izq-A" class="rack" data-z="ALMACÉN" data-t="alm" x="0.2" y="16.167" width="2.5" height="4.333"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="1.45" y="18.333">A</text><line class="secdiv" x1="0.2" y1="11.833" x2="2.7" y2="11.833"/><line class="secdiv" x1="0.2" y1="16.167" x2="2.7" y2="16.167"/><rect id="d1-D" class="rack" data-z="ALMACÉN" data-t="alm" x="5.3" y="7.5" width="2.7" height="4.125"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="6.65" y="9.562">D</text><rect id="d1-C" class="rack" data-z="ALMACÉN" data-t="alm" x="5.3" y="11.625" width="2.7" height="4.125"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="6.65" y="13.688">C</text><rect id="d1-B" class="rack" data-z="ALMACÉN" data-t="alm" x="5.3" y="15.75" width="2.7" height="4.125"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="6.65" y="17.812">B</text><rect id="d1-A" class="rack" data-z="ALMACÉN" data-t="alm" x="5.3" y="19.875" width="2.7" height="4.125"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="6.65" y="21.938">A</text><line class="secdiv" x1="5.3" y1="11.625" x2="8" y2="11.625"/><line class="secdiv" x1="5.3" y1="15.75" x2="8" y2="15.75"/><line class="secdiv" x1="5.3" y1="19.875" x2="8" y2="19.875"/><rect id="d2-D" class="rack" data-z="ALMACÉN" data-t="alm" x="8" y="7.5" width="2.7" height="4.125"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="9.35" y="9.562">D</text><rect id="d2-C" class="rack" data-z="ALMACÉN" data-t="alm" x="8" y="11.625" width="2.7" height="4.125"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="9.35" y="13.688">C</text><rect id="d2-B" class="rack" data-z="ALMACÉN" data-t="alm" x="8" y="15.75" width="2.7" height="4.125"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="9.35" y="17.812">B</text><rect id="d2-A" class="rack" data-z="ALMACÉN" data-t="alm" x="8" y="19.875" width="2.7" height="4.125"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="9.35" y="21.938">A</text><line class="secdiv" x1="8" y1="11.625" x2="10.7" y2="11.625"/><line class="secdiv" x1="8" y1="15.75" x2="10.7" y2="15.75"/><line class="secdiv" x1="8" y1="19.875" x2="10.7" y2="19.875"/><rect id="p2-C" class="rack" data-z="ALMACÉN" data-t="alm" x="13" y="7.5" width="2.5" height="4.333"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="14.25" y="9.667">C</text><rect id="p2-B" class="rack" data-z="ALMACÉN" data-t="alm" x="13" y="11.833" width="2.5" height="4.333"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="14.25" y="14">B</text><rect id="p2-A" class="rack" data-z="ALMACÉN" data-t="alm" x="13" y="16.167" width="2.5" height="4.333"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="14.25" y="18.333">A</text><line class="secdiv" x1="13" y1="11.833" x2="15.5" y2="11.833"/><line class="secdiv" x1="13" y1="16.167" x2="15.5" y2="16.167"/><rect id="p1-C" class="rack" data-z="ALMACÉN" data-t="alm" x="17.5" y="7.5" width="2.5" height="4.333"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="18.75" y="9.667">C</text><rect id="p1-B" class="rack" data-z="ALMACÉN" data-t="alm" x="17.5" y="11.833" width="2.5" height="4.333"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="18.75" y="14">B</text><rect id="p1-A" class="rack" data-z="ALMACÉN" data-t="alm" x="17.5" y="16.167" width="2.5" height="4.333"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="18.75" y="18.333">A</text><line class="secdiv" x1="17.5" y1="11.833" x2="20" y2="11.833"/><line class="secdiv" x1="17.5" y1="16.167" x2="20" y2="16.167"/><polygon id="diag-D" class="rack" data-z="ALMACÉN" data-t="alm" points="1.477,5.604 4.24,2.802 6.02,4.558 3.257,7.36"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="3.749" y="5.081">D</text><polygon id="diag-E" class="rack" data-z="ALMACÉN" data-t="alm" points="4.24,2.802 7.003,0 8.783,1.756 6.02,4.558"/><text dy=".36em" class="sec" data-z="ALMACÉN" data-t="alm" x="6.511" y="2.279">E</text><line class="secdiv" x1="4.24" y1="2.802" x2="6.02" y2="4.558"/><rect id="B3-3" class="rack" data-z="B3" data-t="bun" x="5.1" y="24" width="1.1" height="3"/><text dy=".36em" class="sec" data-z="B3" data-t="bun" x="5.65" y="25.5">3</text><rect id="B3-4" class="rack" data-z="B3" data-t="bun" x="5.1" y="27" width="1.1" height="3"/><text dy=".36em" class="sec" data-z="B3" data-t="bun" x="5.65" y="28.5">4</text><line class="secdiv" x1="5.1" y1="27" x2="6.2" y2="27"/><rect id="B3-2" class="rack" data-z="B3" data-t="bun" x="6.2" y="24" width="3.95" height="1.1"/><text dy=".36em" class="sec" data-z="B3" data-t="bun" x="8.175" y="24.55">2</text><rect id="B3-1" class="rack" data-z="B3" data-t="bun" x="10.15" y="24" width="3.95" height="1.1"/><text dy=".36em" class="sec" data-z="B3" data-t="bun" x="12.125" y="24.55">1</text><line class="secdiv" x1="10.15" y1="24" x2="10.15" y2="25.1"/><rect id="B3-5" class="rack" data-z="B3" data-t="bun" x="6.2" y="28.9" width="3.95" height="1.1"/><text dy=".36em" class="sec" data-z="B3" data-t="bun" x="8.175" y="29.45">5</text><rect id="B3-6" class="rack" data-z="B3" data-t="bun" x="10.15" y="28.9" width="3.95" height="1.1"/><text dy=".36em" class="sec" data-z="B3" data-t="bun" x="12.125" y="29.45">6</text><line class="secdiv" x1="10.15" y1="28.9" x2="10.15" y2="30"/><rect id="B3-7" class="rack" data-z="B3" data-t="bun" x="14.1" y="26.4" width="1.1" height="3.6"/><text dy=".36em" class="sec" data-z="B3" data-t="bun" x="14.65" y="28.2">7</text><rect id="B3-10" class="rack" data-z="B3" data-t="bun" x="7.45" y="27.025" width="2.7" height="1.1"/><text dy=".36em" class="sec" data-z="B3" data-t="bun" x="8.8" y="27.575">10</text><rect id="B3-11" class="rack" data-z="B3" data-t="bun" x="10.15" y="27.025" width="2.7" height="1.1"/><text dy=".36em" class="sec" data-z="B3" data-t="bun" x="11.5" y="27.575">11</text><line class="secdiv" x1="10.15" y1="27.025" x2="10.15" y2="28.125"/><rect id="B3-9" class="rack" data-z="B3" data-t="bun" x="7.45" y="25.875" width="2.7" height="1.1"/><text dy=".36em" class="sec" data-z="B3" data-t="bun" x="8.8" y="26.425">9</text><rect id="B3-8" class="rack" data-z="B3" data-t="bun" x="10.15" y="25.875" width="2.7" height="1.1"/><text dy=".36em" class="sec" data-z="B3" data-t="bun" x="11.5" y="26.425">8</text><line class="secdiv" x1="10.15" y1="25.875" x2="10.15" y2="26.975"/><rect id="B2-1" class="rack" data-z="B2" data-t="bun" x="15.5" y="24" width="4.2" height="1.1"/><text dy=".36em" class="sec" data-z="B2" data-t="bun" x="17.6" y="24.55">1</text><rect id="B2-2" class="rack" data-z="B2" data-t="bun" x="15.2" y="26.4" width="1.1" height="3.6"/><text dy=".36em" class="sec" data-z="B2" data-t="bun" x="15.75" y="28.2">2</text><rect id="B2-3" class="rack" data-z="B2" data-t="bun" x="16.3" y="28.9" width="5.4" height="1.1"/><text dy=".36em" class="sec" data-z="B2" data-t="bun" x="19" y="29.45">3</text><rect id="B2-4" class="rack" data-z="B2" data-t="bun" x="17.7" y="26.45" width="4" height="1.1"/><text dy=".36em" class="sec" data-z="B2" data-t="bun" x="19.7" y="27">4</text><rect id="B1-3" class="rack" data-z="B1" data-t="bun" x="21.7" y="24" width="3.4" height="1.1"/><text dy=".36em" class="sec" data-z="B1" data-t="bun" x="23.4" y="24.55">3</text><rect id="B1-2" class="rack" data-z="B1" data-t="bun" x="27" y="24" width="3" height="1.1"/><text dy=".36em" class="sec" data-z="B1" data-t="bun" x="28.5" y="24.55">2</text><rect id="B1-1" class="rack" data-z="B1" data-t="bun" x="28.9" y="25.1" width="1.1" height="3.4"/><text dy=".36em" class="sec" data-z="B1" data-t="bun" x="29.45" y="26.8">1</text><line class="gap" x1="20" y1="3.2" x2="20" y2="4.2"/><line class="door" x1="20" y1="3.2" x2="19" y2="3.2"/><path class="arc" d="M20 4.2 A1 1 0 0 1 19 3.2"/><line class="gap" x1="29.6" y1="8.4" x2="28.6" y2="8.4"/><line class="door" x1="29.6" y1="8.4" x2="29.6" y2="9.4"/><path class="arc" d="M28.6 8.4 A1 1 0 0 0 29.6 9.4"/><line class="gap" x1="20" y1="21.05" x2="20" y2="22.05"/><line class="door" x1="20" y1="21.05" x2="19" y2="21.05"/><path class="arc" d="M20 22.05 A1 1 0 0 1 19 21.05"/><line class="gap" x1="20" y1="23.05" x2="20" y2="22.05"/><line class="door" x1="20" y1="23.05" x2="19" y2="23.05"/><path class="arc" d="M20 22.05 A1 1 0 0 0 19 23.05"/><line class="gap" x1="1.2" y1="24" x2="2.2" y2="24"/><line class="door" x1="1.2" y1="24" x2="1.2" y2="23"/><path class="arc" d="M2.2 24 A1 1 0 0 0 1.2 23"/><line class="gap" x1="26.1" y1="24" x2="25.1" y2="24"/><line class="door" x1="26.1" y1="24" x2="26.1" y2="25"/><path class="arc" d="M25.1 24 A1 1 0 0 0 26.1 25"/><rect class="stairs" x="20.2" y="4.7" width="1.7" height="3.7"/><line class="step" x1="20.2" y1="5.317" x2="21.9" y2="5.317"/><line class="step" x1="20.2" y1="5.933" x2="21.9" y2="5.933"/><line class="step" x1="20.2" y1="6.55" x2="21.9" y2="6.55"/><line class="step" x1="20.2" y1="7.167" x2="21.9" y2="7.167"/><line class="step" x1="20.2" y1="7.783" x2="21.9" y2="7.783"/><g id="pk-p2-C" class="pk" data-z="ALMACÉN" data-t="alm"><rect class="halo" x="12.88" y="6.93" width="2.74" height="0.69" rx=".18"/><line class="hook" x1="13.156" y1="7.5" x2="13.156" y2="7.3"/><circle class="hookdot" cx="13.156" cy="7.3" r=".055"/><line class="hook" x1="13.469" y1="7.5" x2="13.469" y2="7.3"/><circle class="hookdot" cx="13.469" cy="7.3" r=".055"/><line class="hook" x1="13.781" y1="7.5" x2="13.781" y2="7.3"/><circle class="hookdot" cx="13.781" cy="7.3" r=".055"/><line class="hook" x1="14.094" y1="7.5" x2="14.094" y2="7.3"/><circle class="hookdot" cx="14.094" cy="7.3" r=".055"/><line class="hook" x1="14.406" y1="7.5" x2="14.406" y2="7.3"/><circle class="hookdot" cx="14.406" cy="7.3" r=".055"/><line class="hook" x1="14.719" y1="7.5" x2="14.719" y2="7.3"/><circle class="hookdot" cx="14.719" cy="7.3" r=".055"/><line class="hook" x1="15.031" y1="7.5" x2="15.031" y2="7.3"/><circle class="hookdot" cx="15.031" cy="7.3" r=".055"/><line class="hook" x1="15.344" y1="7.5" x2="15.344" y2="7.3"/><circle class="hookdot" cx="15.344" cy="7.3" r=".055"/></g><g id="pk-p1-C" class="pk" data-z="ALMACÉN" data-t="alm"><rect class="halo" x="17.38" y="6.93" width="2.74" height="0.69" rx=".18"/><line class="hook" x1="17.656" y1="7.5" x2="17.656" y2="7.3"/><circle class="hookdot" cx="17.656" cy="7.3" r=".055"/><line class="hook" x1="17.969" y1="7.5" x2="17.969" y2="7.3"/><circle class="hookdot" cx="17.969" cy="7.3" r=".055"/><line class="hook" x1="18.281" y1="7.5" x2="18.281" y2="7.3"/><circle class="hookdot" cx="18.281" cy="7.3" r=".055"/><line class="hook" x1="18.594" y1="7.5" x2="18.594" y2="7.3"/><circle class="hookdot" cx="18.594" cy="7.3" r=".055"/><line class="hook" x1="18.906" y1="7.5" x2="18.906" y2="7.3"/><circle class="hookdot" cx="18.906" cy="7.3" r=".055"/><line class="hook" x1="19.219" y1="7.5" x2="19.219" y2="7.3"/><circle class="hookdot" cx="19.219" cy="7.3" r=".055"/><line class="hook" x1="19.531" y1="7.5" x2="19.531" y2="7.3"/><circle class="hookdot" cx="19.531" cy="7.3" r=".055"/><line class="hook" x1="19.844" y1="7.5" x2="19.844" y2="7.3"/><circle class="hookdot" cx="19.844" cy="7.3" r=".055"/></g><g id="pk-p2-A" class="pk" data-z="ALMACÉN" data-t="alm"><rect class="halo" x="12.88" y="20.38" width="2.74" height="0.69" rx=".18"/><line class="hook" x1="13.156" y1="20.5" x2="13.156" y2="20.7"/><circle class="hookdot" cx="13.156" cy="20.7" r=".055"/><line class="hook" x1="13.469" y1="20.5" x2="13.469" y2="20.7"/><circle class="hookdot" cx="13.469" cy="20.7" r=".055"/><line class="hook" x1="13.781" y1="20.5" x2="13.781" y2="20.7"/><circle class="hookdot" cx="13.781" cy="20.7" r=".055"/><line class="hook" x1="14.094" y1="20.5" x2="14.094" y2="20.7"/><circle class="hookdot" cx="14.094" cy="20.7" r=".055"/><line class="hook" x1="14.406" y1="20.5" x2="14.406" y2="20.7"/><circle class="hookdot" cx="14.406" cy="20.7" r=".055"/><line class="hook" x1="14.719" y1="20.5" x2="14.719" y2="20.7"/><circle class="hookdot" cx="14.719" cy="20.7" r=".055"/><line class="hook" x1="15.031" y1="20.5" x2="15.031" y2="20.7"/><circle class="hookdot" cx="15.031" cy="20.7" r=".055"/><line class="hook" x1="15.344" y1="20.5" x2="15.344" y2="20.7"/><circle class="hookdot" cx="15.344" cy="20.7" r=".055"/></g><g id="pk-p1-A" class="pk" data-z="ALMACÉN" data-t="alm"><rect class="halo" x="17.38" y="20.38" width="2.74" height="0.69" rx=".18"/><line class="hook" x1="17.656" y1="20.5" x2="17.656" y2="20.7"/><circle class="hookdot" cx="17.656" cy="20.7" r=".055"/><line class="hook" x1="17.969" y1="20.5" x2="17.969" y2="20.7"/><circle class="hookdot" cx="17.969" cy="20.7" r=".055"/><line class="hook" x1="18.281" y1="20.5" x2="18.281" y2="20.7"/><circle class="hookdot" cx="18.281" cy="20.7" r=".055"/><line class="hook" x1="18.594" y1="20.5" x2="18.594" y2="20.7"/><circle class="hookdot" cx="18.594" cy="20.7" r=".055"/><line class="hook" x1="18.906" y1="20.5" x2="18.906" y2="20.7"/><circle class="hookdot" cx="18.906" cy="20.7" r=".055"/><line class="hook" x1="19.219" y1="20.5" x2="19.219" y2="20.7"/><circle class="hookdot" cx="19.219" cy="20.7" r=".055"/><line class="hook" x1="19.531" y1="20.5" x2="19.531" y2="20.7"/><circle class="hookdot" cx="19.531" cy="20.7" r=".055"/><line class="hook" x1="19.844" y1="20.5" x2="19.844" y2="20.7"/><circle class="hookdot" cx="19.844" cy="20.7" r=".055"/></g><g id="pk-B2" class="pk" data-z="B2" data-t="bun"><rect class="halo" x="21.13" y="23.88" width="0.69" height="1.34" rx=".18"/><line class="hook" x1="21.7" y1="24.183" x2="21.5" y2="24.183"/><circle class="hookdot" cx="21.5" cy="24.183" r=".055"/><line class="hook" x1="21.7" y1="24.55" x2="21.5" y2="24.55"/><circle class="hookdot" cx="21.5" cy="24.55" r=".055"/><line class="hook" x1="21.7" y1="24.917" x2="21.5" y2="24.917"/><circle class="hookdot" cx="21.5" cy="24.917" r=".055"/></g><g id="pk-B1" class="pk" data-z="B1" data-t="bun"><rect class="halo" x="26.43" y="23.88" width="0.69" height="1.34" rx=".18"/><line class="hook" x1="27" y1="24.183" x2="26.8" y2="24.183"/><circle class="hookdot" cx="26.8" cy="24.183" r=".055"/><line class="hook" x1="27" y1="24.55" x2="26.8" y2="24.55"/><circle class="hookdot" cx="26.8" cy="24.55" r=".055"/><line class="hook" x1="27" y1="24.917" x2="26.8" y2="24.917"/><circle class="hookdot" cx="26.8" cy="24.917" r=".055"/></g><g id="pk-pared" class="pk" data-z="ALMACÉN" data-t="alm"><rect class="halo" x="15.08" y="23.33" width="4.34" height="0.69" rx=".18"/><line class="hook" x1="15.358" y1="23.9" x2="15.358" y2="23.7"/><circle class="hookdot" cx="15.358" cy="23.7" r=".055"/><line class="hook" x1="15.673" y1="23.9" x2="15.673" y2="23.7"/><circle class="hookdot" cx="15.673" cy="23.7" r=".055"/><line class="hook" x1="15.988" y1="23.9" x2="15.988" y2="23.7"/><circle class="hookdot" cx="15.988" cy="23.7" r=".055"/><line class="hook" x1="16.304" y1="23.9" x2="16.304" y2="23.7"/><circle class="hookdot" cx="16.304" cy="23.7" r=".055"/><line class="hook" x1="16.619" y1="23.9" x2="16.619" y2="23.7"/><circle class="hookdot" cx="16.619" cy="23.7" r=".055"/><line class="hook" x1="16.935" y1="23.9" x2="16.935" y2="23.7"/><circle class="hookdot" cx="16.935" cy="23.7" r=".055"/><line class="hook" x1="17.25" y1="23.9" x2="17.25" y2="23.7"/><circle class="hookdot" cx="17.25" cy="23.7" r=".055"/><line class="hook" x1="17.565" y1="23.9" x2="17.565" y2="23.7"/><circle class="hookdot" cx="17.565" cy="23.7" r=".055"/><line class="hook" x1="17.881" y1="23.9" x2="17.881" y2="23.7"/><circle class="hookdot" cx="17.881" cy="23.7" r=".055"/><line class="hook" x1="18.196" y1="23.9" x2="18.196" y2="23.7"/><circle class="hookdot" cx="18.196" cy="23.7" r=".055"/><line class="hook" x1="18.512" y1="23.9" x2="18.512" y2="23.7"/><circle class="hookdot" cx="18.512" cy="23.7" r=".055"/><line class="hook" x1="18.827" y1="23.9" x2="18.827" y2="23.7"/><circle class="hookdot" cx="18.827" cy="23.7" r=".055"/><line class="hook" x1="19.142" y1="23.9" x2="19.142" y2="23.7"/><circle class="hookdot" cx="19.142" cy="23.7" r=".055"/></g><g id="pk-escalera" class="pk" data-z="ALMACÉN" data-t="alm"><rect class="halo" x="19.33" y="4.38" width="0.69" height="2.94" rx=".18"/><line class="hook" x1="19.9" y1="4.669" x2="19.7" y2="4.669"/><circle class="hookdot" cx="19.7" cy="4.669" r=".055"/><line class="hook" x1="19.9" y1="5.006" x2="19.7" y2="5.006"/><circle class="hookdot" cx="19.7" cy="5.006" r=".055"/><line class="hook" x1="19.9" y1="5.344" x2="19.7" y2="5.344"/><circle class="hookdot" cx="19.7" cy="5.344" r=".055"/><line class="hook" x1="19.9" y1="5.681" x2="19.7" y2="5.681"/><circle class="hookdot" cx="19.7" cy="5.681" r=".055"/><line class="hook" x1="19.9" y1="6.019" x2="19.7" y2="6.019"/><circle class="hookdot" cx="19.7" cy="6.019" r=".055"/><line class="hook" x1="19.9" y1="6.356" x2="19.7" y2="6.356"/><circle class="hookdot" cx="19.7" cy="6.356" r=".055"/><line class="hook" x1="19.9" y1="6.694" x2="19.7" y2="6.694"/><circle class="hookdot" cx="19.7" cy="6.694" r=".055"/><line class="hook" x1="19.9" y1="7.031" x2="19.7" y2="7.031"/><circle class="hookdot" cx="19.7" cy="7.031" r=".055"/></g><g id="pas-6" class="pas" data-z="ALMACÉN" data-t="alm"><circle cx="3.25" cy="14" r=".42"/><text dy=".36em" x="3.25" y="14">6</text></g><g id="pas-5" class="pas" data-z="ALMACÉN" data-t="alm"><circle cx="4.75" cy="14" r=".42"/><text dy=".36em" x="4.75" y="14">5</text></g><g id="pas-4" class="pas" data-z="ALMACÉN" data-t="alm"><circle cx="11.25" cy="14" r=".42"/><text dy=".36em" x="11.25" y="14">4</text></g><g id="pas-3" class="pas" data-z="ALMACÉN" data-t="alm"><circle cx="12.45" cy="14" r=".42"/><text dy=".36em" x="12.45" y="14">3</text></g><g id="pas-2" class="pas" data-z="ALMACÉN" data-t="alm"><circle cx="16.05" cy="14" r=".42"/><text dy=".36em" x="16.05" y="14">2</text></g><g id="pas-1" class="pas" data-z="ALMACÉN" data-t="alm"><circle cx="16.95" cy="14" r=".42"/><text dy=".36em" x="16.95" y="14">1</text></g><polygon class="wall" points="7,0 30,0 30,30 0,30 0,7.1"/><g class="zlabel t-alm" data-z="ALMACÉN" data-t="alm"><rect x="9.83" y="3.15" width="5.34" height="1.2" rx=".2"/><text dy=".36em" x="12.5" y="3.75">ALMACÉN</text></g><g class="zlabel t-rec" data-z="RECEPCIÓN" data-t="rec"><rect x="21.71" y="3.6" width="6.58" height="1.2" rx=".2"/><text dy=".36em" x="25" y="4.2">RECEPCIÓN</text></g><g class="zlabel t-tal" data-z="TALLER" data-t="tal"><rect x="22.64" y="15.6" width="4.72" height="1.2" rx=".2"/><text dy=".36em" x="25" y="16.2">TALLER</text></g><g class="zlabel t-bun" data-z="B1" data-t="bun"><rect x="24.73" y="26.4" width="2.24" height="1.2" rx=".2"/><text dy=".36em" x="25.85" y="27">B1</text></g><g class="zlabel t-bun" data-z="B2" data-t="bun"><rect x="17.93" y="25.1" width="2.24" height="1.2" rx=".2"/><text dy=".36em" x="19.05" y="25.7">B2</text></g><g class="zlabel t-bun" data-z="B3" data-t="bun"><rect x="12.63" y="25.15" width="2.24" height="1.2" rx=".2"/><text dy=".36em" x="13.75" y="25.75">B3</text></g><g class="zlabel t-ban" data-z="BAÑO" data-t="ban"><rect x="0.81" y="26.4" width="3.48" height="1.2" rx=".2"/><text dy=".36em" x="2.55" y="27">BAÑO</text></g></svg></div>
 
-  <div class="where" id="where" hidden>
+  <div class="where" id="where" role="status" aria-live="polite" hidden>
     <span class="dot"></span>
     <div><div class="what" id="whereWhat"></div><div class="loc" id="whereLoc"></div></div>
   </div>
 
   <div class="search">
-    <input id="q" type="text" enterkeyhint="search" placeholder="Nombre o referencia…" autocomplete="off" aria-label="Buscar producto">
+    <input id="q" type="text" enterkeyhint="search" placeholder="Nombre o referencia…" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="Buscar producto" aria-controls="list">
     <button class="clear" id="clear" type="button" aria-label="Borrar búsqueda" hidden>×</button>
   </div>
-  <div class="list" id="list" aria-live="polite"></div>
+  <div class="vh" id="status" role="status" aria-live="polite"></div>
+  <div class="list" id="list"></div>
 </div>
 
 <script>
@@ -196,8 +201,8 @@ const PRODUCTOS = [
   {"r": "BBIG ROCKET", "n": "Base cañero montaje en tubo 27–31 mm inox Rocket", "d": "Pasillo 1 · Estantería C", "t": ["p1-C", "pas-1"], "k": "rocket canero acero inoxidable"},
   {"r": "BBIN ROCKET", "n": "Base cañero montaje en tubo 20–27 mm inox Rocket", "d": "Pasillo 1 · Estantería C", "t": ["p1-C", "pas-1"], "k": "rocket canero acero inoxidable"},
   {"r": "CBI ROCKET", "n": "Cañero básico Rocket inox", "d": "Pasillo 1 · Estantería C", "t": ["p1-C", "pas-1"], "k": "rocket canero acero inoxidable"},
-  {"r": "CBA ROCKET", "n": "Cañero básico Rocket aluminio", "d": "Pasillo 1 · Estantería C", "t": ["p1-C", "pas-1"], "k": "rocket canero acero inoxidable"},
-  {"r": "CAE ROCKET", "n": "Cañero Rocket EVO aluminio", "d": "Pasillo 1 · Estantería C", "t": ["p1-C", "pas-1"], "k": "rocket canero acero inoxidable"},
+  {"r": "CBA ROCKET", "n": "Cañero básico Rocket aluminio", "d": "Pasillo 1 · Estantería C", "t": ["p1-C", "pas-1"], "k": "rocket canero aluminio"},
+  {"r": "CAE ROCKET", "n": "Cañero Rocket EVO aluminio", "d": "Pasillo 1 · Estantería C", "t": ["p1-C", "pas-1"], "k": "rocket canero aluminio"},
   {"r": "CIE ROCKET", "n": "Cañero Rocket EVO inox", "d": "Pasillo 1 · Estantería C", "t": ["p1-C", "pas-1"], "k": "rocket canero acero inoxidable"},
   {"r": "00128", "n": "Cable de alimentación Simrad NSE 2 m", "d": "Pinchos de la estantería A · Pasillo 2", "t": ["pk-p2-A", "pas-2"], "k": "cable", "a": "000-00128-001"},
   {"r": "000-0127-29", "n": "Cable Ethernet 4,5 m", "d": "Pinchos de la estantería A · Pasillo 2", "t": ["pk-p2-A", "pas-2"], "k": "cable"},
@@ -442,54 +447,94 @@ const PRODUCTOS = [
   {"r": "T2B1", "n": "Juego adaptadores montaje piloto automático Lowrance / Simrad", "d": "Pinchos pared almacén (junto al búnker)", "t": ["pk-pared"], "k": "hydrodrive direccion hidraulica"},
 ];
 const $ = id => document.getElementById(id);
-const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+// Quita tildes, unifica guiones (– — − → -) y quita º/°, para que "27-31" encuentre "27–31"
+const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "")
+  .replace(/[‐-―−]/g, "-").replace(/[º°]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+const squash = s => s.replace(/[\s\-\/.,+()·]/g, "");   // "000-16366-001" → "00016366001"
+
+// Texto de búsqueda de cada producto, preparado una sola vez (no en cada tecla)
+const INDEX = PRODUCTOS.map((p, i) => {
+  const txt = norm([p.n, p.r, p.a, p.d, p.k].join(" "));
+  return { p, i, txt, flat: squash(txt), name: norm(p.n), ref: squash(norm(p.r)), alt: squash(norm(p.a)) };
+});
+// 0 = referencia exacta … 4 = coincide en otro campo; -1 = no coincide
+function score(e, q, qq, words) {
+  if (!(e.txt.includes(q) || e.flat.includes(qq) || words.every(w => e.txt.includes(w)))) return -1;
+  if (e.ref === qq || e.alt === qq) return 0;
+  if ((e.ref && e.ref.startsWith(qq)) || (e.alt && e.alt.startsWith(qq))) return 1;
+  if (e.name.startsWith(q)) return 2;
+  if (e.name.includes(q) || e.ref.includes(qq)) return 3;
+  return 4;
+}
+
 let sel = null;
+const shown = new Map();                 // producto → su botón en la lista
 
 function render() {
-  const q = norm($("q").value);
-  $("clear").hidden = !$("q").value;
+  const raw = $("q").value, q = norm(raw), qq = squash(q);
+  $("clear").hidden = !raw;
   const box = $("list");
-  box.innerHTML = "";
-  if (!q) return;                       // sin texto no se enseña nada
-  const qq = q.replace(/[\s\-\/.,]/g, "");
-  const list = PRODUCTOS.filter(p => {
-    const txt = norm([p.n, p.r, p.a, p.d, p.k].join(" "));
-    return txt.includes(q) || txt.replace(/[\s\-\/.,]/g, "").includes(qq) || q.split(" ").every(w => txt.includes(w));
-  });
-  if (!list.length) { box.innerHTML = `<div class="empty">No encuentro «${$("q").value.replace(/</g, "&lt;")}». Prueba con otra palabra.</div>`; return; }
-  for (const p of list) {
+  box.textContent = "";
+  shown.clear();
+  if (!qq) { $("status").textContent = ""; return; }   // sin texto (o solo signos) no se enseña nada
+  const words = q.split(" ").filter(w => squash(w));
+  const list = [];
+  for (const e of INDEX) { const s = score(e, q, qq, words); if (s >= 0) list.push([s, e]); }
+  list.sort((a, b) => a[0] - b[0] || a[1].i - b[1].i);
+  if (!list.length) {
+    const d = document.createElement("div");
+    d.className = "empty";
+    d.textContent = `No encuentro «${raw.trim()}». Prueba con otra palabra.`;
+    box.appendChild(d);
+    $("status").textContent = "Sin resultados";
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  for (const [, { p }] of list) {
     const b = document.createElement("button");
     b.type = "button"; b.className = "item" + (sel === p ? " sel" : "");
+    b.setAttribute("aria-pressed", sel === p);
     b.innerHTML = `<span><b></b><span class="ref"></span></span><small></small>`;
     b.querySelector("b").textContent = p.n;
     b.querySelector(".ref").textContent = p.r ? "Ref. " + p.r + (p.a ? " · " + p.a : "") : "";
     b.querySelector("small").textContent = p.d;
     b.onclick = () => pick(p);
-    box.appendChild(b);
+    shown.set(p, b);
+    frag.appendChild(b);
   }
+  box.appendChild(frag);
+  $("status").textContent = list.length === 1 ? "1 resultado" : list.length + " resultados";
 }
-function pick(p) {
-  sel = sel === p ? null : p;          // tocar otra vez el mismo lo apaga
-  const plan = $("plan");
-  plan.querySelectorAll(".hl").forEach(el => el.classList.remove("hl"));
-  plan.querySelectorAll(".off").forEach(el => el.classList.remove("off"));
-  plan.classList.toggle("has-hl", !!(sel && sel.t.length));
+
+const plan = $("plan");
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+function pick(p, toggle = true) {
+  sel = toggle && sel === p ? null : p;   // tocar otra vez el mismo lo apaga
+  plan.querySelectorAll(".hl, .off").forEach(el => el.classList.remove("hl", "off"));
+  const zs = new Set(), ts = new Set();
+  if (sel) sel.t.forEach(id => { const el = document.getElementById(id); if (el) { el.classList.add("hl"); zs.add(el.dataset.z); ts.add(el.dataset.t); } });
+  // Se apaga el resto del plano solo si hay algo que iluminar ("Ubicación pendiente" deja el plano normal)
+  plan.classList.toggle("has-hl", zs.size > 0);
+  if (zs.size) plan.querySelectorAll("[data-z]").forEach(el => { if (!zs.has(el.dataset.z)) el.classList.add("off"); });
+  for (const [prod, b] of shown) { b.classList.toggle("sel", prod === sel); b.setAttribute("aria-pressed", prod === sel); }
   $("where").hidden = !sel;
-  if (sel) {
-    const zs = new Set(), ts = new Set();
-    sel.t.forEach(id => { const el = document.getElementById(id); if (el) { el.classList.add("hl"); zs.add(el.dataset.z); ts.add(el.dataset.t); } });
-    plan.querySelectorAll("[data-z]").forEach(el => el.classList.toggle("off", !zs.has(el.dataset.z)));
-    const t = ts.size === 1 ? [...ts][0] : "alm";
-    $("where").style.setProperty("--hl", `var(--v-${t})`);
-    $("where").style.setProperty("--hl-ink", `var(--zi-${t})`);
-    $("whereWhat").textContent = sel.n + (sel.r ? " · Ref. " + sel.r : "");
-    $("whereLoc").textContent = sel.d;
-    $("plan").scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-  render();
+  if (!sel) return;
+  const t = ts.size === 1 ? [...ts][0] : ts.size ? "alm" : "tal";   // sin sitio: gris
+  $("where").style.setProperty("--hl", `var(--v-${t})`);
+  $("where").style.setProperty("--hl-ink", `var(--zi-${t})`);
+  $("whereWhat").textContent = sel.n + (sel.r ? " · Ref. " + sel.r : "");
+  $("whereLoc").textContent = sel.d;
+  // Solo se desplaza si el plano no se ve entero
+  const card = plan.parentElement, r = card.getBoundingClientRect();
+  if (r.top < 0 || r.bottom > innerHeight) card.scrollIntoView({ behavior: reduceMotion.matches ? "auto" : "smooth", block: "start" });
 }
 $("q").addEventListener("input", render);
-$("q").addEventListener("keydown", e => { if (e.key === "Enter") { const first = $("list").querySelector(".item"); if (first) first.click(); } });
+$("q").addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    const first = shown.keys().next().value;
+    if (first) { pick(first, false); if (matchMedia("(pointer: coarse)").matches) $("q").blur(); }   // en el móvil se cierra el teclado para ver el plano
+  } else if (e.key === "Escape" && $("q").value) { e.preventDefault(); $("clear").click(); }
+});
 $("clear").onclick = () => { $("q").value = ""; render(); $("q").focus(); };
 render();
 
